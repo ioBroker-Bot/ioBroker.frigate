@@ -1,4 +1,7 @@
 # Older changes
+## 3.0.3 (2026-06-09)
+- (@GermanBluefox) Added a button to re-create the docker container
+
 ## 3.0.2 (2026-05-30)
 - (@GermanBluefox) Replaced the track of objects with a drop down menu
 

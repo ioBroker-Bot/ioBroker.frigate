@@ -33,7 +33,7 @@ Adapter for [Frigate NVR](https://frigate.video/) — an open-source, self-hoste
     Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 3.1.5 (2026-09-22)
 - (@GermanBluefox) The live widget for `ioBroker.devices` did not show the stream in admin: before the adapter had reported the address of the web instance, the widget already loaded the stream relative to admin (port 8081), and the error of that attempt stayed on the tile even after the right address had arrived. The widget now waits for the address, and if the stream still cannot be loaded (web instance not reachable, http stream inside an https admin), it switches to single pictures over the socket
 
 ### 3.1.4 (2026-09-14)
@@ -41,7 +41,7 @@ Adapter for [Frigate NVR](https://frigate.video/) — an open-source, self-hoste
 
 ### 3.1.3 (2026-09-09)
 - (@GermanBluefox) The camera name in the device manager tile moved below the picture: at the top of the tile the drag handle and the favourite star of the widget manager were drawn over it
-- (@GermanBluefox) The build helper is written in TypeScriptpes itself now.
+- (@GermanBluefox) The build helper is written in TypeScript itself now.
 
 ### 3.1.2 (2026-08-28)
 - (@GermanBluefox) The Frigate directory can no longer be left empty by accident: the validator complained but did not stop the dialog from being saved. With an empty directory the plugin mounts named volumes instead of the chosen directory, while the adapter writes `config.yml` into the ioBroker data directory - Frigate then starts without its configuration
@@ -55,9 +55,6 @@ Adapter for [Frigate NVR](https://frigate.video/) — an open-source, self-hoste
 - (@GermanBluefox) Added two widgets for ioBroker.devices: a snapshot tile that works everywhere, and a live MJPEG tile
 - (@GermanBluefox) Added the `snapshot` message, which returns the current picture of a camera as base64
 - (Eistee82) Fixed zone object counters (e.g. `<zone>.person`) staying at their last value after the object left the zone. Per-zone object counts are now sourced solely from the Frigate MQTT occupancy topics, and the zone aggregator resets its active/stationary states to 0 and uses `current_zones` instead of the cumulative `entered_zones`.
-
-### 3.0.3 (2026-06-09)
-- (@GermanBluefox) Added a button to re-create the docker container
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
