@@ -273,5 +273,9 @@
     "web_extension_info": "适配器可通过 web 适配器提供快照和 MJPEG 视频流。这些路由沿用 web 的身份验证与 http/https 方案，因此无需额外开放端口。",
     "web_instance_help": "“全部”（*）会把扩展加载到每个 web 实例。选择“停用”则关闭摄像机代理。",
     "web_route_help": "留空则使用默认的 <实例>/，例如 frigate.0/。路由为 <前缀><摄像机>/snapshot.jpg 和 <前缀><摄像机>/stream.mjpeg。",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} 检测到 {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} 检测到 {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

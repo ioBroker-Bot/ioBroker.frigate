@@ -16,6 +16,7 @@ Adapter für [Frigate NVR](https://frigate.video/) — ein quelloffenes, selbst 
   - [Kamera-States](#kamera-states)
   - [Kamera-Fernsteuerung](#kamera-fernsteuerung)
   - [Zonen](#zonen)
+  - [Erkannte Namen](#erkannte-namen)
   - [Frigate Benachrichtigungssteuerung](#frigate-benachrichtigungssteuerung)
   - [Automatisch verfügbare States](#automatisch-verfügbare-states)
 - [Benachrichtigungen](#benachrichtigungen)
@@ -169,8 +170,32 @@ Der reine Objektzähler (z.B. `<zone>.person`, `<zone>.car`) kommt direkt aus de
 | `<zone>.person_stationary` | number  | Stehende Personen                                | Event-Aggregator |
 | `<zone>.total_objects`     | number  | Gesamtzahl aller Objekte (aktiv + stehend)       | Event-Aggregator |
 | `<zone>.active`            | boolean | Irgendein Objekt in der Zone erkannt             | Event-Aggregator |
+| `<zone>.sub_labels`        | string  | Namen, die gerade in der Zone erkannt werden, z. B. `Anna, Daven`; leer, wenn niemand erkannt wird | Event-Aggregator |
 
-Die aktiv/stehend-States nutzen `current_zones` des Objekts und werden auf 0 zurückgesetzt, sobald das Objekt die Zone verlässt oder das Event endet.
+Die aktiv/stehend-States nutzen `current_zones` des Objekts und werden auf 0 zurückgesetzt, sobald das Objekt die Zone verlässt oder das Event endet. Für `<zone>.sub_labels` gilt dasselbe.
+
+### Erkannte Namen
+
+Erkennt Frigate eine Person per Gesichtserkennung oder ein bekanntes Kennzeichen, trägt es den Namen als
+`sub_label` am Event ein. Daraus pflegt der Adapter für jeden Namen einen Datenpunkt:
+
+| State                | Typ     | Beschreibung                                                          |
+|----------------------|---------|-----------------------------------------------------------------------|
+| `sub_labels.<name>`  | boolean | `true`, solange ein laufendes Event diesen Namen trägt, egal auf welcher Kamera oder in welcher Zone |
+
+Ist in Frigate die Gesichtserkennung eingeschaltet (`face_recognition.enabled`), liest der Adapter beim
+Start die Gesichtsbibliothek (`/api/faces`) und legt für jeden angelernten Namen den Datenpunkt gleich
+mit `false` an. So lassen sich Automatisierungen einrichten, bevor die Person das erste Mal erkannt
+wurde. Namen, die erst später angelernt werden, und erkannte Kennzeichen erscheinen, sobald Frigate
+sie das erste Mal meldet, spätestens aber beim nächsten Start. Aus der Bibliothek gelöschte Namen
+entfernt der Adapter nicht, weil Skripte sie noch verwenden könnten.
+
+Punkte und Leerzeichen im Namen werden in der ID zu `_`, der Objektname behält den Originalnamen.
+Welche Events laufen, weiß der Adapter nur im Speicher: Nach einem Neustart stehen alle Namen auf
+`false`, bis Frigate das Event wieder meldet. Das gilt auch für `<zone>.sub_labels`.
+
+`events.after.sub_label.<name>` gibt es weiterhin unverändert. Das ist aber nur ein Teil des zuletzt
+gemeldeten Events und wird nie zurückgesetzt. Für Automatisierungen eignen sich die States oben.
 
 ### Frigate Benachrichtigungssteuerung
 

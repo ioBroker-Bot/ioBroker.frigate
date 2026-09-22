@@ -241,6 +241,44 @@ export async function createCameraDevices(ctx: EventHistoryContext): Promise<any
     return data;
 }
 
+/**
+ * Names in Frigate's face library, so `sub_labels.<name>` exists before somebody is recognized for
+ * the first time and automations can be set up in advance.
+ *
+ * `/api/faces` answers `{ <name>: [<image files>] }`. The folder `train` holds recent recognitions
+ * that nobody has assigned yet, so it is no name. Without face recognition in the Frigate config the
+ * library is not asked at all.
+ *
+ * @param ctx adapter and the authenticated client for the Frigate API
+ * @param ctx.adapter the adapter, for the base URL and the log
+ * @param ctx.requestClient the client for the Frigate API
+ * @param configData the answer of `/api/config`
+ */
+export async function fetchFaceNames(
+    ctx: Pick<EventHistoryContext, 'adapter' | 'requestClient'>,
+    configData: any,
+): Promise<string[]> {
+    if (configData?.face_recognition?.enabled !== true) {
+        return [];
+    }
+    const url = `${ctx.adapter.frigateBaseUrl}/api/faces`;
+    try {
+        const response = await ctx.requestClient.get(url);
+        const faces = response.data;
+        if (!faces || typeof faces !== 'object' || Array.isArray(faces)) {
+            ctx.adapter.log.warn(`Unexpected answer from ${url}: ${JSON.stringify(faces).substring(0, 200)}`);
+            return [];
+        }
+        const names = Object.keys(faces).filter(name => name.trim() && name !== 'train');
+        ctx.adapter.log.debug(`Face library: ${names.join(', ') || 'empty'}`);
+        return names;
+    } catch (error) {
+        ctx.adapter.log.warn(`Cannot read the face library from ${url}`);
+        ctx.adapter.log.warn(error instanceof Error ? error.message : String(error));
+        return [];
+    }
+}
+
 export async function cleanTrackedObjects(adapter: ioBroker.Adapter): Promise<void> {
     adapter.log.info('Cleaning old tracked objects');
     try {

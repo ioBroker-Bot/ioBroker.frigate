@@ -273,5 +273,9 @@
     "web_extension_info": "The adapter can serve snapshots and MJPEG streams through the web adapter. The routes inherit its authentication and http/https, so no additional port has to be opened.",
     "web_instance_help": "\"All\" (*) loads the extension into every web instance. \"Deactivate\" turns the camera proxy off.",
     "web_route_help": "Leave empty for the default <instance>/, e.g. frigate.0/. The routes are then <prefix><camera>/snapshot.jpg and <prefix><camera>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} detected {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} detected {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

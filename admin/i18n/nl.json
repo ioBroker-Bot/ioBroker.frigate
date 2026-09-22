@@ -273,5 +273,9 @@
     "web_extension_info": "De adapter kan momentopnamen en MJPEG-streams via de web-adapter aanbieden. De routes erven de authenticatie en het http/https-schema, zodat er geen extra poort geopend hoeft te worden.",
     "web_instance_help": "„Alle” (*) laadt de extensie in elke web-instantie. Met „deactiveren” wordt de cameraproxy uitgeschakeld.",
     "web_route_help": "Laat leeg voor de standaard <instantie>/, bijv. frigate.0/. De routes zijn dan <voorvoegsel><camera>/snapshot.jpg en <voorvoegsel><camera>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} gedetecteerd {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} gedetecteerd {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

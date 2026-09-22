@@ -15,6 +15,8 @@ export type FrigateMessage = {
         has_clip?: boolean;
         stationary?: boolean;
         active?: boolean;
+        /** Recognized name: `[name, score]` since Frigate 0.14, a plain string before */
+        sub_label?: string | [string, number] | null;
     };
     before: {
         id: string;
@@ -30,6 +32,8 @@ export type FrigateMessage = {
         has_clip?: boolean;
         stationary?: boolean;
         active?: boolean;
+        /** Recognized name: `[name, score]` since Frigate 0.14, a plain string before */
+        sub_label?: string | [string, number] | null;
     };
     history: {
         path_data?: string;

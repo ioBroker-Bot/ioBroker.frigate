@@ -273,5 +273,9 @@
     "web_extension_info": "Adapter może udostępniać zdjęcia i strumienie MJPEG przez adapter web. Trasy dziedziczą jego uwierzytelnianie oraz schemat http/https, więc nie trzeba otwierać dodatkowego portu.",
     "web_instance_help": "„Wszystkie” (*) ładuje rozszerzenie do każdej instancji web. „Dezaktywuj” wyłącza proxy kamer.",
     "web_route_help": "Pozostaw puste, aby użyć domyślnego <instancja>/, np. frigate.0/. Trasy to wtedy <prefiks><kamera>/snapshot.jpg i <prefiks><kamera>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "Wykryto {{source}} {{type}} {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "Wykryto {{source}} {{type}} {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

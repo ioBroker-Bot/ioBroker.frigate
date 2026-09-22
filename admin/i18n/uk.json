@@ -273,5 +273,9 @@
     "web_extension_info": "Адаптер може віддавати знімки та MJPEG-потоки через адаптер web. Маршрути успадковують його автентифікацію та схему http/https, тож додатковий порт відкривати не потрібно.",
     "web_instance_help": "«Усі» (*) завантажує розширення в усі екземпляри web. «Деактивувати» вимикає проксі камер.",
     "web_route_help": "Залиште порожнім для типового <екземпляр>/, напр. frigate.0/. Тоді маршрути будуть <префікс><камера>/snapshot.jpg і <префікс><камера>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} виявлено {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} виявлено {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

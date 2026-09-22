@@ -273,5 +273,9 @@
     "web_extension_info": "El adaptador puede servir instantáneas y flujos MJPEG a través del adaptador web. Las rutas heredan su autenticación y su esquema http/https, por lo que no hay que abrir ningún puerto adicional.",
     "web_instance_help": "«Todas» (*) carga la extensión en todas las instancias web. «Desactivar» apaga el proxy de cámaras.",
     "web_route_help": "Déjelo vacío para el valor predeterminado <instancia>/, p. ej. frigate.0/. Las rutas serán <prefijo><cámara>/snapshot.jpg y <prefijo><cámara>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} detectado {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} detectado {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

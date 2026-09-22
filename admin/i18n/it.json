@@ -273,5 +273,9 @@
     "web_extension_info": "L'adattatore può fornire istantanee e flussi MJPEG tramite l'adattatore web. I percorsi ereditano la sua autenticazione e lo schema http/https, quindi non serve aprire altre porte.",
     "web_instance_help": "«Tutte» (*) carica l'estensione in ogni istanza web. «Disattiva» spegne il proxy telecamere.",
     "web_route_help": "Lasciare vuoto per il valore predefinito <istanza>/, ad es. frigate.0/. I percorsi saranno <prefisso><telecamera>/snapshot.jpg e <prefisso><telecamera>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} rilevato {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} rilevato {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }

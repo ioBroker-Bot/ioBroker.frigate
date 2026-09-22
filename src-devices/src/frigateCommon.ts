@@ -41,7 +41,7 @@ export function resolveCamera(settings: {
 /**
  * Branches below `frigate.<n>.` that are not cameras. Everything else at that level is one.
  */
-const NOT_A_CAMERA = ['stats', 'events', 'info', 'remote', 'notification', 'zones'];
+const NOT_A_CAMERA = ['stats', 'events', 'info', 'remote', 'notification', 'zones', 'sub_labels'];
 
 /**
  * Turn `frigate.0.Vorgarten` or any state below it into `{ instanceId: '0', name: 'Vorgarten' }`.

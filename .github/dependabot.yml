@@ -6,7 +6,9 @@ version: 2
 updates:
 
   - package-ecosystem: 'npm'
-    directory: '/'
+    directories:
+      - '/'
+      - '/src-devices'
     schedule:
       interval: 'cron'
       timezone: 'Europe/Berlin'

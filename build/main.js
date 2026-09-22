@@ -13,7 +13,7 @@ import { createFrigateConfigFile } from './lib/utils.js';
 import Json2iob from './lib/json2iob.js';
 import { handleMqttMessage } from './lib/messageHandler.js';
 import { prepareEventNotification, sendNotification } from './lib/notifications.js';
-import { fetchEventHistory, createCameraDevices, cleanTrackedObjects, handleTrackedObjectUpdate, } from './lib/eventHistory.js';
+import { fetchEventHistory, createCameraDevices, cleanTrackedObjects, fetchFaceNames, handleTrackedObjectUpdate, } from './lib/eventHistory.js';
 import { handleStateChange } from './lib/stateHandler.js';
 import { ZoneAggregator } from './lib/zoneAggregator.js';
 class FrigateAdapter extends Adapter {
@@ -128,6 +128,8 @@ class FrigateAdapter extends Adapter {
         await this.cleanOldObjects();
         await cleanTrackedObjects(this);
         this.trackedObjectsHistory = [];
+        // Before MQTT starts: nobody is known to be recognized until Frigate reports the event again
+        await this.zoneAggregator.resetSubLabels();
         this.subscribeStates('*_state');
         this.subscribeStates('*.remote.*');
         this.subscribeStates('remote.*');
@@ -413,6 +415,7 @@ class FrigateAdapter extends Adapter {
                     deviceArray: this.deviceArray,
                 });
                 await this.zoneAggregator.initZones(configData);
+                await this.zoneAggregator.addKnownSubLabels(await fetchFaceNames({ adapter: this, requestClient: this.requestClient }, configData));
                 this.firstStart = false;
             },
             onEvent: async (data) => {

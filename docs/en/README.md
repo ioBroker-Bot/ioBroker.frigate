@@ -16,6 +16,7 @@ Adapter for [Frigate NVR](https://frigate.video/) — an open-source, self-hoste
   - [Camera States](#camera-states)
   - [Camera Remote Controls](#camera-remote-controls)
   - [Zones](#zones)
+  - [Recognized names](#recognized-names)
   - [Frigate Notification Control](#frigate-notification-control)
   - [Automatically Available States](#automatically-available-states)
 - [Notifications](#notifications)
@@ -169,8 +170,32 @@ The plain object count (e.g. `<zone>.person`, `<zone>.car`) comes directly from 
 | `<zone>.person_stationary` | number  | Stationary persons                                  | event aggregator |
 | `<zone>.total_objects`     | number  | Total objects of all types (active + stationary)    | event aggregator |
 | `<zone>.active`            | boolean | Any object detected in zone                         | event aggregator |
+| `<zone>.sub_labels`        | string  | Names recognized in the zone right now, e.g. `Anna, Daven`; empty when nobody is recognized | event aggregator |
 
-The active/stationary states use the object's `current_zones` and are reset to 0 once the object leaves the zone or the event ends.
+The active/stationary states use the object's `current_zones` and are reset to 0 once the object leaves the zone or the event ends. The same applies to `<zone>.sub_labels`.
+
+### Recognized names
+
+When Frigate recognizes a person by face recognition or a known license plate, it puts the name on the
+event as `sub_label`. From that the adapter keeps one state per name:
+
+| State                | Type    | Description                                                          |
+|----------------------|---------|----------------------------------------------------------------------|
+| `sub_labels.<name>`  | boolean | `true` as long as a running event carries this name, on any camera and in any zone |
+
+When face recognition is enabled in Frigate (`face_recognition.enabled`), the adapter reads the face
+library (`/api/faces`) on start and creates the state of every trained name right away, as `false`.
+That way automations can be set up before the person has ever been recognized. Names trained later
+and recognized license plates show up as soon as Frigate reports them for the first time, or on the
+next start at the latest. Names deleted from the library are not removed, because scripts may still
+use them.
+
+Dots and spaces of a name become `_` in the id; the object name keeps the original name.
+Which events are running is only kept in memory: after a restart all names are `false` until Frigate
+reports the event again. The same applies to `<zone>.sub_labels`.
+
+`events.after.sub_label.<name>` is still there unchanged. It is only part of the most recently
+reported event, though, and is never reset. For automations use the states above.
 
 ### Frigate Notification Control
 

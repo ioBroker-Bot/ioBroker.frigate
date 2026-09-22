@@ -273,5 +273,9 @@
     "web_extension_info": "Der Adapter kann Snapshots und MJPEG-Streams über den Web-Adapter bereitstellen. Die Routen erben dessen Authentifizierung und http/https, sodass kein zusätzlicher Port geöffnet werden muss.",
     "web_instance_help": "„Alle“ (*) lädt die Erweiterung in jede Web-Instanz. Mit „deaktivieren“ wird der Kamera-Proxy abgeschaltet.",
     "web_route_help": "Leer lassen für den Standard <Instanz>/, z. B. frigate.0/. Die Routen lauten dann <Präfix><Kamera>/snapshot.jpg und <Präfix><Kamera>/stream.mjpeg.",
-    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} erkannt {{status}} {{score}} {{state}}"
+    "{{source}} {{type}} detected {{status}} {{score}} {{state}}": "{{source}} {{type}} erkannt {{status}} {{score}} {{state}}",
+    "frigate": "frigate",
+    "frigate.0/": "frigate.0/",
+    "camera1,camera2": "camera1,camera2",
+    "zone1,zone2": "zone1,zone2"
 }
