@@ -6,12 +6,14 @@
  *
  * The catch: that route belongs to the *web* adapter (port 8082), while the Devices UI is usually
  * served from admin (port 8081). Only when this widget runs inside a web instance does a relative URL
- * work; everywhere else the web instance has to be named in the settings. That is why the snapshot
- * widget, which goes over the socket, is the one that works everywhere.
+ * work; everywhere else the adapter has to say where its web instance is reachable. Until that answer
+ * is in, no `<img>` is rendered at all - a relative URL would hit admin in the meantime.
  *
  * Through the ioBroker cloud (iobroker.pro / iobroker.net) there is no stream at all: the cloud relays
  * the socket but not an endless HTTP response. There the widget fetches single pictures over the
- * socket at the configured frame rate instead, like the snapshot widget does.
+ * socket at the configured frame rate instead, like the snapshot widget does. The same happens when
+ * the stream fails to load elsewhere, e.g. because the browser cannot reach the web instance or blocks
+ * an http stream inside an https admin.
  */
 import { React, MuiMaterial, type WidgetGenericProps } from '@iobroker/dm-widgets';
 import type { TypographyProps } from '@mui/material';
@@ -39,9 +41,16 @@ export interface LiveState extends FrigateWidgetState {
     resolvedRoute: string;
     /** Why no URL could be worked out; empty when there is one or the adapter said nothing */
     webReason: string;
-    /** Base64 JPEG of the newest frame, only used behind the cloud */
+    /** The adapter answered `frigate:getWebUrl`, or waiting for it was given up */
+    webResolved: boolean;
+    /** The stream failed to load, so single pictures come over the socket instead */
+    fallback: boolean;
+    /** Base64 JPEG of the newest frame, only used when the pictures come over the socket */
     frame: string;
 }
+
+/** How long to wait for `frigate:getWebUrl`. An adapter too old to know the command never answers. */
+const RESOLVE_TIMEOUT = 3000;
 
 /**
  * Reason codes of `frigate:getWebUrl` mapped to what the tile shows. Anything the adapter reports
@@ -60,6 +69,9 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
 
     private readonly poller: SnapshotPoller;
 
+    /** Bumped by every `resolveWebUrl()`, so an answer or a timeout of an older run is dropped */
+    private resolveGeneration = 0;
+
     constructor(props: WidgetGenericProps<LiveSettings>) {
         super(props);
         this.state = {
@@ -68,6 +80,8 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
             resolvedWebUrl: '',
             resolvedRoute: '',
             webReason: '',
+            webResolved: false,
+            fallback: false,
             frame: '',
         };
         this.poller = new SnapshotPoller({
@@ -93,10 +107,24 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
 
     componentDidUpdate(prevProps: WidgetGenericProps<LiveSettings>): void {
         super.componentDidUpdate(prevProps);
+        if (this.cloud) {
+            return;
+        }
         // The proxy belongs to the frigate instance, so a different instance can mean a different
         // web instance and a different route
-        if (!this.cloud && prevProps.settings.instance !== this.props.settings.instance) {
+        if (prevProps.settings.instance !== this.props.settings.instance) {
             void this.resolveWebUrl();
+        }
+        // A typed web instance may be the one that works, so give the stream another chance. A new
+        // instance or camera already restarted the camera in the base class.
+        if (
+            prevProps.settings.webUrl !== this.props.settings.webUrl &&
+            prevProps.settings.instance === this.props.settings.instance &&
+            prevProps.settings.camera === this.props.settings.camera &&
+            prevProps.settings.cameraObjectId === this.props.settings.cameraObjectId &&
+            this.camera
+        ) {
+            this.startCamera();
         }
     }
 
@@ -109,10 +137,22 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
      */
     private async resolveWebUrl(): Promise<void> {
         const instance = this.props.settings.instance || 'frigate.0';
+        const generation = ++this.resolveGeneration;
+        this.setState({ webResolved: false });
+
+        let timer: ReturnType<typeof setTimeout> | undefined;
         try {
-            const result: { url?: string; route?: string; reason?: string } = await this.props.stateContext
-                .getSocket()
-                .sendTo(instance, 'frigate:getWebUrl', { hostname: window.location.hostname });
+            const result: { url?: string; route?: string; reason?: string } | undefined = await Promise.race([
+                this.props.stateContext
+                    .getSocket()
+                    .sendTo(instance, 'frigate:getWebUrl', { hostname: window.location.hostname }),
+                new Promise<undefined>(resolve => {
+                    timer = setTimeout(() => resolve(undefined), RESOLVE_TIMEOUT);
+                }),
+            ]);
+            if (generation !== this.resolveGeneration) {
+                return;
+            }
 
             this.setState({
                 resolvedWebUrl: result?.url || '',
@@ -120,10 +160,35 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
                 // Only a code the adapter really sent counts. An adapter too old to know this
                 // command answers nothing, and then the relative URL still deserves its chance.
                 webReason: result?.url ? '' : result?.reason || '',
+                webResolved: true,
+                // Whatever went wrong with the URL known before does not apply to this one
+                error: '',
             });
         } catch {
             // Same here: say nothing rather than blame the web adapter for a failed round trip
+            if (generation === this.resolveGeneration) {
+                this.setState({ webResolved: true });
+            }
+        } finally {
+            clearTimeout(timer);
         }
+    }
+
+    /** Single pictures over the socket: always behind the cloud, elsewhere once the stream failed */
+    private useSocket(): boolean {
+        return this.cloud || this.state.fallback;
+    }
+
+    /**
+     * The stream did not load, most likely because the browser cannot reach the web instance or
+     * blocks an http stream inside an https page. The socket still works, so take the pictures from
+     * there instead of leaving the tile with an error.
+     */
+    private switchToSocket(): void {
+        if (this.state.fallback) {
+            return;
+        }
+        this.setState({ fallback: true, error: '' }, () => this.poller.start());
     }
 
     /**
@@ -153,9 +218,9 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
                 text: 'frigate_live_needs_web',
                 sm: 12,
             },
-            _cloudHint: {
+            _fallbackHint: {
                 type: 'staticText',
-                text: 'frigate_live_cloud',
+                text: 'frigate_live_fallback',
                 sm: 12,
             },
             webUrl: {
@@ -185,9 +250,11 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
     protected startCamera(): void {
         if (this.cloud) {
             this.poller.start();
-        } else {
-            this.setState({ reloadCounter: this.state.reloadCounter + 1 });
+            return;
         }
+        // A new camera or new settings deserve another try with the stream, even after a fallback
+        this.poller.stop();
+        this.setState({ fallback: false, frame: '', error: '', reloadCounter: this.state.reloadCounter + 1 });
     }
 
     protected stopCamera(): void {
@@ -204,7 +271,7 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
             return null;
         }
 
-        if (this.cloud) {
+        if (this.useSocket()) {
             if (!this.state.frame) {
                 return null;
             }
@@ -215,6 +282,13 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
                     style={FrigateWidgetBase.styleFor(full)}
                 />
             );
+        }
+
+        // Before the adapter has answered, a relative URL would go to whatever serves this page -
+        // admin in most installations, which knows nothing about the stream. A typed web instance
+        // wins over the answer anyway, so there is nothing to wait for then.
+        if (!this.state.webResolved && !this.props.settings.webUrl) {
+            return null;
         }
 
         const url = buildWebUrl(this.getWebBase(), this.state.resolvedRoute, this.camera, 'stream.mjpeg', {
@@ -230,42 +304,30 @@ export default class LiveComponent extends FrigateWidgetBase<LiveSettings, LiveS
                 src={url}
                 alt={this.camera.name}
                 style={FrigateWidgetBase.styleFor(full)}
-                onError={() => this.setError(FrigateWidgetBase.t('frigate_stream_failed'))}
+                onError={() => this.switchToSocket()}
             />
         );
     }
 
     /**
-     * Show the hint about the web instance instead of a bare error, but only when neither the
-     * settings nor the adapter produced a base URL - otherwise the real error is the useful one.
-     * Behind the cloud the web instance plays no part, so no such hint applies.
+     * Show why the camera proxy cannot be reached, but only when neither the settings nor the adapter
+     * produced a base URL. Behind the cloud and after a fallback the web instance plays no part, so no
+     * such hint applies - the errors of the socket are the useful ones there.
      */
     protected override renderPicture(full?: boolean): React.JSX.Element {
         const hasBase = !!(this.props.settings.webUrl || this.state.resolvedWebUrl);
 
-        if (!this.cloud && this.camera && !hasBase) {
-            // The adapter named a cause, so say it straight away instead of letting the browser run
-            // into a 404 first and then blaming the settings for it
-            if (this.state.webReason) {
-                return (
-                    <Typography
-                        variant="caption"
-                        sx={{ color: 'text.secondary', p: 1, overflow: 'hidden' }}
-                    >
-                        {FrigateWidgetBase.t(REASON_TEXT[this.state.webReason] || 'frigate_stream_needs_web')}
-                    </Typography>
-                );
-            }
-            if (this.state.error) {
-                return (
-                    <Typography
-                        variant="caption"
-                        sx={{ color: 'error.main', p: 1, overflow: 'hidden' }}
-                    >
-                        {FrigateWidgetBase.t('frigate_stream_needs_web')}
-                    </Typography>
-                );
-            }
+        // The adapter named a cause, so say it straight away instead of letting the browser run into
+        // a 404 first
+        if (!this.useSocket() && this.camera && !hasBase && this.state.webReason) {
+            return (
+                <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary', p: 1, overflow: 'hidden' }}
+                >
+                    {FrigateWidgetBase.t(REASON_TEXT[this.state.webReason] || 'frigate_stream_needs_web')}
+                </Typography>
+            );
         }
 
         return super.renderPicture(full);

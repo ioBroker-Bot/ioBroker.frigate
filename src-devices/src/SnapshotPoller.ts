@@ -2,7 +2,7 @@
  * Fetches pictures of a camera through the adapter's `snapshot` message, one after the other.
  *
  * Used by the snapshot widget all the time, and by the live widget where the MJPEG route of the web
- * adapter cannot be reached - which is the case behind the ioBroker cloud.
+ * adapter cannot be reached - always behind the ioBroker cloud, elsewhere once the stream failed.
  */
 import type { CameraRef } from './frigateCommon';
 
